@@ -1,4 +1,4 @@
-<EXAM PREPRATION PLAN>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -8,8 +8,8 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
   <!-- Chosen Palette: Spartan Steel -->
-  <!-- Application Structure Plan: A single-page application focused on the interactive study dashboard. A new motivational countdown timer with a visual graph has been added to the "Mission Briefing" tab. The "Daily Plan" view renders all 30 days at once, with a "Mission Schedule" sidebar that both scrolls the view to a selected day and highlights the currently visible day on scroll (scroll-spy). -->
-  <!-- Visualization & Content Choices: Report Info: Daily study tasks & exam schedule. Goal: Track completion & view schedule. Viz/Presentation: Interactive checklist, Donut chart (overall) & stacked Bar chart (weekly), formatted timetable, and a new real-time countdown with a visual donut chart. Interaction: All elements are interactive and state is persisted. Justification: A single hub for all planning, tracking, and motivation. Library/Method: Chart.js, vanilla JS with IntersectionObserver. -->
+  <!-- Application Structure Plan: A single-page application with a primary top-tab navigation bar. The three tabs ("Mission Schedule", "Progress Tracker", "Exam Timetable") control the main view. The "Mission Schedule" tab now contains the motivational rules and countdown timer, followed by the full 30-day plan with scroll-spy and click-to-scroll functionality. -->
+  <!-- Visualization & Content Choices: Report Info: Daily study tasks & exam schedule. Goal: Track completion & view schedule. Viz/Presentation: Interactive checklist, Donut chart (overall) & stacked Bar chart (weekly), formatted timetable, and a real-time countdown. Interaction: All elements are interactive and state is persisted. Justification: A single hub for all planning, tracking, and motivation with a more traditional and clear tab navigation structure. Library/Method: Chart.js, vanilla JS with IntersectionObserver. -->
   <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
   <style>
     html, body {
@@ -19,17 +19,11 @@
         overscroll-behavior-y: contain;
     }
     body {
-      background: linear-gradient(135deg, #e4eef3, #dbeaff, #fbe7f9);
+      background-color: #f1f5f9; /* slate-100 */
       font-family: 'Inter', 'Segoe UI', sans-serif;
       display: flex;
       flex-direction: column;
       padding: 1rem;
-    }
-
-    .dashboard-container {
-        flex-grow: 1;
-        overflow: hidden;
-        height: 100%;
     }
 
     #app {
@@ -39,6 +33,7 @@
         max-width: 1100px;
         margin: 0 auto;
         height: 100%;
+        width: 100%;
         display: flex;
         flex-direction: column;
         position: relative;
@@ -54,7 +49,7 @@
         border-left-width: 4px;
     }
     .task-card.completed {
-        background-color: #f1f5f9;
+        background-color: #f0fdf4;
         border-left-color: #4ade80;
     }
     .task-card.pending {
@@ -72,22 +67,22 @@
     .chart-container {
         position: relative;
         margin: auto;
-        height: 300px;
+        height: 280px;
         width: 100%;
-        max-width: 400px;
+        max-width: 350px;
     }
      @media (min-width: 768px) {
         .chart-container {
-            height: 350px;
+            height: 320px;
         }
     }
     .tab.active {
-        border-bottom-color: #dc2626;
-        color: #111827;
-        font-weight: 600;
+        background-color: #dc2626;
+        color: white;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     }
     .tab {
-        border-bottom-color: transparent;
+        transition: all 0.2s ease-in-out;
     }
     .exam-card {
         background-color: #f8fafc;
@@ -100,182 +95,160 @@
 
     #backToTopBtn {
         position: absolute;
-        bottom: 2rem;
-        right: 2rem;
+        bottom: 1.5rem;
+        right: 1.5rem;
         display: none;
         transition: opacity 0.3s, transform 0.3s;
         opacity: 0;
         transform: translateY(10px);
+        z-index: 50;
     }
     #backToTopBtn.show {
         display: flex;
         opacity: 1;
         transform: translateY(0);
     }
+    .accordion-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-in-out;
+    }
+    .accordion-content.open {
+        max-height: 500px; /* Adjust as needed */
+    }
   </style>
 </head>
 <body>
 
-  <div class="dashboard-container">
-    <div id="app" class="text-gray-800 p-4 sm:p-6 lg:p-8">
-        <header class="text-center mb-8 flex-shrink-0">
-            <h1 class="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight">The 30-Day Path from Rock Bottom to Competent</h1>
-            <p class="mt-2 text-lg text-gray-600">Interactive Dashboard . Study Well . God Bless You</p>
-        </header>
+  <div id="app" class="text-gray-800 p-4 sm:p-6 lg:p-8">
+      <header class="text-center mb-4 flex-shrink-0">
+          <h1 class="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight">The 30-Day Path from Rock Bottom to Competent</h1>
+          <p class="mt-2 text-base text-gray-600">Interactive Dashboard . Study Well . God Bless You </p>
+      </header>
 
-        <div class="mb-6 border-b border-gray-200 flex-shrink-0">
-            <nav class="flex space-x-8" aria-label="Tabs">
-                <button id="tab-daily-plan" class="tab py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Mission Briefing</button>
-                <button id="tab-progress" class="tab py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Progress Tracker</button>
-                <button id="tab-timetable" class="tab py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">Exam Timetable</button>
-            </nav>
-        </div>
+      <div class="mb-6 p-1 bg-slate-100 rounded-full flex-shrink-0 flex justify-center">
+          <nav id="top-tab-nav" class="flex space-x-1" aria-label="Tabs">
+              <button data-view="view-mission-schedule" class="tab py-2 px-4 sm:px-6 rounded-full font-semibold text-sm text-gray-600 hover:bg-slate-200">Mission Schedule</button>
+              <button data-view="view-progress" class="tab py-2 px-4 sm:px-6 rounded-full font-semibold text-sm text-gray-600 hover:bg-slate-200">Progress Tracker</button>
+              <button data-view="view-timetable" class="tab py-2 px-4 sm:px-6 rounded-full font-semibold text-sm text-gray-600 hover:bg-slate-200">Exam Timetable</button>
+          </nav>
+      </div>
 
-        <div id="main-content-wrapper">
-            <main id="main-content">
-                <div id="view-daily-plan">
-                    <div class="mb-8 p-4 bg-slate-100 rounded-xl flex items-center gap-4">
-                        <div class="w-24 h-24 flex-shrink-0">
-                            <canvas id="countdownChart"></canvas>
-                        </div>
-                        <div class="flex-grow">
-                            <h2 class="text-lg font-bold text-gray-800">Time Until First Exam </h2>
-                            <div id="countdown-text" class="text-2xl md:text-3xl font-black text-red-600 tracking-tighter">
-                                <span id="days">00</span>d : 
-                                <span id="hours">00</span>h : 
-                                <span id="minutes">00</span>m : 
-                                <span id="seconds">00</span>s
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mb-8 p-4 bg-slate-50 rounded-lg">
-                        <h2 class="text-xl font-black text-gray-800 mb-4">THE RULES OF ENGAGEMENT ( AS YOUR WISH )</h2>
-                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 text-center">
-                            <div class="p-3 bg-white rounded-lg shadow-sm flex flex-col items-center justify-center">
-                                <svg class="h-8 w-8 text-red-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                <p class="text-xs font-bold">Wake Up: 05:00</p>
-                            </div>
-                             <div class="p-3 bg-white rounded-lg shadow-sm flex flex-col items-center justify-center">
-                                <svg class="h-8 w-8 text-red-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v11.494m-9-5.747h18" /></svg>
-                                <p class="text-xs font-bold">90min Sprints</p>
-                            </div>
-                             <div class="p-3 bg-white rounded-lg shadow-sm flex flex-col items-center justify-center">
-                                <svg class="h-8 w-8 text-red-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9V3m0 18a9 9 0 009-9m-9 9a9 9 0 00-9-9" /></svg>
-                                <p class="text-xs font-bold">Limited Breaks</p>
-                            </div>
-                             <div class="p-3 bg-white rounded-lg shadow-sm flex flex-col items-center justify-center">
-                                <svg class="h-8 w-8 text-red-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                <p class="text-xs font-bold">Complete All Tasks</p>
-                            </div>
-                            <div class="p-3 bg-white rounded-lg shadow-sm flex flex-col items-center justify-center">
-                                <svg class="h-8 w-8 text-red-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 14l9-5-9-5-9 5 9 5z" /><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-5.998 12.078 12.078 0 01.665-6.479L12 14z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-5.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222 4 2.222V20" /></svg>
-                                <p class="text-xs font-bold">Mandatory Review</p>
-                            </div>
-                            <div class="p-3 bg-white rounded-lg shadow-sm flex flex-col items-center justify-center">
-                                <svg class="h-8 w-8 text-red-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-                                <p class="text-xs font-bold">Sleep: 22:30</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex flex-col lg:flex-row gap-8">
-                        <aside class="w-full lg:w-1/3 xl:w-1/4">
-                            <h2 class="text-xl font-bold mb-4 text-gray-900">Mission Schedule</h2>
-                            <div id="day-selector" class="space-y-4"></div>
-                        </aside>
-                        <section id="plan-details" class="w-full lg:w-2/3 xl:w-3/4"></section>
-                    </div>
-                </div>
-                <div id="view-progress" class="hidden">
-                     <div class="text-center mb-8">
-                        <h2 class="text-2xl font-bold text-gray-900">Your Progress Report</h2>
-                        <p class="text-gray-600 mt-1">This is a real-time reflection of your work. Make the numbers go up.</p>
-                    </div>
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-                        <div class="bg-gray-50 p-6 rounded-lg">
-                            <h3 class="font-bold text-lg text-center mb-4">Overall Completion</h3>
-                            <div class="chart-container">
-                                <canvas id="overallProgressChart"></canvas>
-                            </div>
-                        </div>
-                        <div class="bg-gray-50 p-6 rounded-lg">
-                            <h3 class="font-bold text-lg text-center mb-4">Weekly Task Completion</h3>
-                             <div class="chart-container" style="max-width: 600px;">
-                                <canvas id="weeklyProgressChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div id="view-timetable" class="hidden">
-                    <div class="bg-white p-4 sm:p-6 rounded-xl shadow">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-4">Final Examination Schedule</h2>
-                        <div class="mb-6 p-4 bg-slate-50 rounded-lg">
-                            <h3 class="font-semibold text-gray-700 mb-3">Quick Navigation</h3>
-                            <div class="flex flex-wrap gap-2">
-                                <button onclick="scrollToExam('date-18', 'theory')" class="text-xs font-semibold bg-blue-100 text-blue-800 py-1 px-3 rounded-full hover:bg-blue-200 transition">Aug 18 (Theory)</button>
-                                <button onclick="scrollToExam('date-20', 'theory')" class="text-xs font-semibold bg-blue-100 text-blue-800 py-1 px-3 rounded-full hover:bg-blue-200 transition">Aug 20 (Theory)</button>
-                                <button onclick="scrollToExam('date-22', 'theory')" class="text-xs font-semibold bg-blue-100 text-blue-800 py-1 px-3 rounded-full hover:bg-blue-200 transition">Aug 22 (Theory)</button>
-                                <button onclick="scrollToExam('date-23', 'theory')" class="text-xs font-semibold bg-blue-100 text-blue-800 py-1 px-3 rounded-full hover:bg-blue-200 transition">Aug 23 (Theory)</button>
-                                <button onclick="scrollToExam('date-25', 'practical')" class="text-xs font-semibold bg-orange-100 text-orange-800 py-1 px-3 rounded-full hover:bg-orange-200 transition">Practicals</button>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="theory">
-                                <h2 class="font-semibold text-lg text-blue-700 mb-2">Theory Examinations</h2>
-                                <ul class="space-y-4 text-sm sm:text-base">
-                                    <li id="date-18" class="exam-card border-blue-500 p-4 rounded-lg">
-                                      <strong>18.08.2025 (Monday)</strong><br>
-                                      PHAR 205T – Pharmacology (I & II)<br>
-                                      PATH 210T – Pathology (I & II) (Including Genetics)<br>
-                                      <strong>Time:</strong> 10:00 A.M. – 1:00 P.M.
-                                    </li>
-                                    <li id="date-20" class="exam-card border-blue-500 p-4 rounded-lg">
-                                      <strong>20.08.2025 (Wednesday)</strong><br>
-                                      N-AHN 225T – Adult Health Nursing II with Integrated Pathophysiology, Geriatric Nursing & Palliative Care<br>
-                                      <strong>Time:</strong> 10:00 A.M. – 1:00 P.M.
-                                    </li>
-                                    <li id="date-22" class="exam-card border-blue-500 p-4 rounded-lg">
-                                      <strong>22.08.2025 (Friday)</strong><br>
-                                      PROF 230 – Professionalism, Professional Values & Ethics (Including Bioethics)<br>
-                                      <strong>Time:</strong> 10:00 A.M. – 1:00 P.M.
-                                    </li>
-                                    <li id="date-23" class="exam-card border-blue-500 p-4 rounded-lg">
-                                      <strong>23.08.2025 (Saturday)</strong><br>
-                                      ELEC 1 – Human Values (Elective)<br>
-                                      <strong>Time:</strong> 10:00 A.M. – 1:00 P.M.
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="practical">
-                                <h2 class="font-semibold text-lg text-orange-700 mb-2">Practical Examinations</h2>
-                                <ul class="space-y-4 text-sm sm:text-base">
-                                    <li id="date-25" class="exam-card border-orange-500 p-4 rounded-lg">
-                                      <strong>25.08.2025 (Monday)</strong><br>
-                                      N-AHN 225P – Adult Health Nursing II Practical
-                                    </li>
-                                    <li id="date-26" class="exam-card border-orange-500 p-4 rounded-lg">
-                                      <strong>26.08.2025 (Tuesday)</strong><br>
-                                      N-AHN 225P – Adult Health Nursing II Practical
-                                    </li>
-                                    <li id="date-28" class="exam-card border-orange-500 p-4 rounded-lg">
-                                      <strong>28.08.2025 (Thursday)</strong><br>
-                                      N-AHN 225P – Adult Health Nursing II Practical
-                                    </li>
-                                    <li id="date-29" class="exam-card border-orange-500 p-4 rounded-lg">
-                                      <strong>29.08.2025 (Friday)</strong><br>
-                                      N-AHN 225P – Adult Health Nursing II Practical
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
-        </div>
-        
-        <button id="backToTopBtn" class="bg-red-600 text-white rounded-lg shadow-lg hover:bg-red-700 p-3 items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg>
-        </button>
-    </div>
+      <div id="main-content-wrapper">
+          <main id="main-content">
+              <div id="view-mission-schedule">
+                  <div class="mb-8 p-4 bg-slate-100 rounded-xl flex items-center gap-4">
+                      <div class="w-20 h-20 flex-shrink-0">
+                          <canvas id="countdownChart"></canvas>
+                      </div>
+                      <div class="flex-grow">
+                          <h2 class="text-base font-bold text-gray-800">Time Until First Exam</h2>
+                          <div id="countdown-text" class="text-2xl md:text-3xl font-black text-red-600 tracking-tighter">
+                              <span id="days">00</span>d : 
+                              <span id="hours">00</span>h : 
+                              <span id="minutes">00</span>m : 
+                              <span id="seconds">00</span>s
+                          </div>
+                      </div>
+                  </div>
+                  <div class="flex flex-col lg:flex-row gap-8">
+                      <aside class="w-full lg:w-1/3 xl:w-1/4 lg:sticky top-4 self-start">
+                          <h2 class="text-xl font-bold mb-4 text-gray-900">Mission Schedule</h2>
+                          <div id="day-selector" class="space-y-4 bg-white p-4 rounded-xl shadow-sm"></div>
+                      </aside>
+                      <section id="plan-details" class="w-full lg:w-2/3 xl:w-3/4"></section>
+                  </div>
+              </div>
+              <div id="view-progress" class="hidden">
+                   <div class="text-center mb-8">
+                      <h2 class="text-2xl font-bold text-gray-900">Your Progress Report</h2>
+                      <p class="text-gray-600 mt-1">This is a real-time reflection of your work. Make the numbers go up.</p>
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                      <div class="bg-white p-6 rounded-xl shadow-sm">
+                          <h3 class="font-bold text-lg text-center mb-4">Overall Completion</h3>
+                          <div class="chart-container">
+                              <canvas id="overallProgressChart"></canvas>
+                          </div>
+                      </div>
+                      <div class="bg-white p-6 rounded-xl shadow-sm">
+                          <h3 class="font-bold text-lg text-center mb-4">Weekly Task Completion</h3>
+                           <div class="chart-container" style="max-width: 600px;">
+                              <canvas id="weeklyProgressChart"></canvas>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+              <div id="view-timetable" class="hidden">
+                  <div class="bg-white p-4 sm:p-6 rounded-xl shadow-sm">
+                      <h2 class="text-2xl font-bold text-gray-900 mb-4">Final Examination Schedule</h2>
+                      <div class="mb-6 p-4 bg-slate-50 rounded-lg">
+                          <h3 class="font-semibold text-gray-700 mb-3">Quick Navigation</h3>
+                          <div class="flex flex-wrap gap-2">
+                              <button onclick="scrollToExam('date-18', 'theory')" class="text-xs font-semibold bg-blue-100 text-blue-800 py-1 px-3 rounded-full hover:bg-blue-200 transition">Aug 18 (Theory)</button>
+                              <button onclick="scrollToExam('date-20', 'theory')" class="text-xs font-semibold bg-blue-100 text-blue-800 py-1 px-3 rounded-full hover:bg-blue-200 transition">Aug 20 (Theory)</button>
+                              <button onclick="scrollToExam('date-22', 'theory')" class="text-xs font-semibold bg-blue-100 text-blue-800 py-1 px-3 rounded-full hover:bg-blue-200 transition">Aug 22 (Theory)</button>
+                              <button onclick="scrollToExam('date-23', 'theory')" class="text-xs font-semibold bg-blue-100 text-blue-800 py-1 px-3 rounded-full hover:bg-blue-200 transition">Aug 23 (Theory)</button>
+                              <button onclick="scrollToExam('date-25', 'practical')" class="text-xs font-semibold bg-orange-100 text-orange-800 py-1 px-3 rounded-full hover:bg-orange-200 transition">Practicals</button>
+                          </div>
+                      </div>
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div class="theory">
+                              <h2 class="font-semibold text-lg text-blue-700 mb-2">Theory Examinations</h2>
+                              <ul class="space-y-4 text-sm sm:text-base">
+                                  <li id="date-18" class="exam-card border-blue-500 p-4 rounded-lg">
+                                    <strong>18.08.2025 (Monday)</strong><br>
+                                    PHAR 205T – Pharmacology (I & II)<br>
+                                    PATH 210T – Pathology (I & II) (Including Genetics)<br>
+                                    <strong>Time:</strong> 10:00 A.M. – 1:00 P.M.
+                                  </li>
+                                  <li id="date-20" class="exam-card border-blue-500 p-4 rounded-lg">
+                                    <strong>20.08.2025 (Wednesday)</strong><br>
+                                    N-AHN 225T – Adult Health Nursing II with Integrated Pathophysiology, Geriatric Nursing & Palliative Care<br>
+                                    <strong>Time:</strong> 10:00 A.M. – 1:00 P.M.
+                                  </li>
+                                  <li id="date-22" class="exam-card border-blue-500 p-4 rounded-lg">
+                                    <strong>22.08.2025 (Friday)</strong><br>
+                                    PROF 230 – Professionalism, Professional Values & Ethics (Including Bioethics)<br>
+                                    <strong>Time:</strong> 10:00 A.M. – 1:00 P.M.
+                                  </li>
+                                  <li id="date-23" class="exam-card border-blue-500 p-4 rounded-lg">
+                                    <strong>23.08.2025 (Saturday)</strong><br>
+                                    ELEC 1 – Human Values (Elective)<br>
+                                    <strong>Time:</strong> 10:00 A.M. – 1:00 P.M.
+                                  </li>
+                              </ul>
+                          </div>
+                          <div class="practical">
+                              <h2 class="font-semibold text-lg text-orange-700 mb-2">Practical Examinations</h2>
+                              <ul class="space-y-4 text-sm sm:text-base">
+                                  <li id="date-25" class="exam-card border-orange-500 p-4 rounded-lg">
+                                    <strong>25.08.2025 (Monday)</strong><br>
+                                    N-AHN 225P – Adult Health Nursing II Practical
+                                  </li>
+                                  <li id="date-26" class="exam-card border-orange-500 p-4 rounded-lg">
+                                    <strong>26.08.2025 (Tuesday)</strong><br>
+                                    N-AHN 225P – Adult Health Nursing II Practical
+                                  </li>
+                                  <li id="date-28" class="exam-card border-orange-500 p-4 rounded-lg">
+                                    <strong>28.08.2025 (Thursday)</strong><br>
+                                    N-AHN 225P – Adult Health Nursing II Practical
+                                  </li>
+                                  <li id="date-29" class="exam-card border-orange-500 p-4 rounded-lg">
+                                    <strong>29.08.2025 (Friday)</strong><br>
+                                    N-AHN 225P – Adult Health Nursing II Practical
+                                  </li>
+                              </ul>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </main>
+      </div>
+      
+      <button id="backToTopBtn" class="bg-red-600 text-white rounded-full shadow-lg hover:bg-red-700 p-3 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg>
+      </button>
   </div>
 
 <script>
@@ -539,13 +512,12 @@ function renderDaySelector() {
         const weekContainer = document.createElement('div');
         weekContainer.className = 'mb-4';
 
-        const weekTitle = document.createElement('h3');
-        weekTitle.className = 'text-lg font-bold text-gray-800 mb-2';
-        weekTitle.textContent = `Week ${weekNumber}: ${weekData.title}`;
-        weekContainer.appendChild(weekTitle);
-
+        const weekHeader = document.createElement('button');
+        weekHeader.className = 'w-full text-left text-lg font-bold text-gray-800 mb-2 flex justify-between items-center';
+        weekHeader.innerHTML = `<span>Week ${weekNumber}: ${weekData.title}</span><svg class="w-5 h-5 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>`;
+        
         const dayGrid = document.createElement('div');
-        dayGrid.className = 'grid grid-cols-7 gap-2';
+        dayGrid.className = 'accordion-content grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-4 gap-2';
 
         weekData.days.forEach(dayNum => {
             const dayButton = document.createElement('button');
@@ -555,8 +527,20 @@ function renderDaySelector() {
             dayGrid.appendChild(dayButton);
         });
         
+        weekContainer.appendChild(weekHeader);
         weekContainer.appendChild(dayGrid);
         selectorContainer.appendChild(weekContainer);
+
+        weekHeader.addEventListener('click', () => {
+            dayGrid.classList.toggle('open');
+            weekHeader.querySelector('svg').classList.toggle('rotate-180');
+        });
+
+        // Open the current week by default
+        if (weekData.days.includes(appState.currentDay)) {
+            dayGrid.classList.add('open');
+            weekHeader.querySelector('svg').classList.add('rotate-180');
+        }
     }
 }
 
@@ -588,7 +572,7 @@ function renderAllPlans() {
 
         daySection.innerHTML = `
             <div class="p-1 mb-10">
-                <h2 class="text-2xl font-black text-gray-900 sticky top-0 bg-white/80 backdrop-blur-sm py-2">Day ${dayData.day}: Daily Tasks</h2>
+                <h2 class="text-2xl font-black text-gray-900 sticky top-0 bg-white/80 backdrop-blur-sm py-2 z-10">Day ${dayData.day}: Daily Tasks</h2>
                 <div class="mt-6 space-y-4">${tasksHtml}</div>
             </div>
         `;
@@ -805,21 +789,13 @@ function scrollToExam(id, type) {
 }
 
 function switchView(viewId) {
-    document.getElementById('view-daily-plan').classList.add('hidden');
-    document.getElementById('view-progress').classList.add('hidden');
-    document.getElementById('view-timetable').classList.add('hidden');
-    document.getElementById('tab-daily-plan').classList.remove('active');
-    document.getElementById('tab-progress').classList.remove('active');
-    document.getElementById('tab-timetable').classList.remove('active');
+    document.querySelectorAll('#main-content > div').forEach(view => view.classList.add('hidden'));
+    document.querySelectorAll('#top-tab-nav .tab').forEach(item => item.classList.remove('active'));
     
     document.getElementById(viewId).classList.remove('hidden');
     
-    const tabMap = {
-        'view-daily-plan': 'tab-daily-plan',
-        'view-progress': 'tab-progress',
-        'view-timetable': 'tab-timetable'
-    };
-    document.getElementById(tabMap[viewId]).classList.add('active');
+    const activeTab = document.querySelector(`#top-tab-nav .tab[data-view="${viewId}"]`);
+    if(activeTab) activeTab.classList.add('active');
 
     if (viewId === 'view-progress') {
         renderCharts();
@@ -833,7 +809,7 @@ function switchView(viewId) {
 
 document.addEventListener('DOMContentLoaded', () => {
     loadState();
-    switchView('view-daily-plan');
+    switchView('view-mission-schedule');
     renderDaySelector();
     renderAllPlans();
     setActiveDay(appState.currentDay);
@@ -845,8 +821,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const backToTopBtn = document.getElementById('backToTopBtn');
 
     daySelector.addEventListener('click', (e) => {
-        if (e.target.matches('button')) {
-            const day = parseInt(e.target.dataset.day, 10);
+        const button = e.target.closest('button.day-selector-item');
+        if (button) {
+            const day = parseInt(button.dataset.day, 10);
             const targetElement = document.getElementById(`day-plan-${day}`);
             if (targetElement) {
                 targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -871,9 +848,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    document.getElementById('tab-daily-plan').addEventListener('click', () => switchView('view-daily-plan'));
-    document.getElementById('tab-progress').addEventListener('click', () => switchView('view-progress'));
-    document.getElementById('tab-timetable').addEventListener('click', () => switchView('view-timetable'));
+    document.getElementById('top-tab-nav').addEventListener('click', (e) => {
+        const navItem = e.target.closest('.tab');
+        if (navItem) {
+            switchView(navItem.dataset.view);
+        }
+    });
 
     mainContentWrapper.addEventListener('scroll', () => {
         if (mainContentWrapper.scrollTop > 300) {
