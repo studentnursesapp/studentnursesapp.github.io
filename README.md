@@ -263,8 +263,8 @@
 
     <div id="app" class="p-4 sm:p-6 md:p-8">
         <header class="text-center mb-4 flex-shrink-0">
-            <h1 class="text-3xl sm:text-4xl font-black tracking-tight gradient-text">The 30-Day Judgment</h1>
-            <p class="mt-2 text-base text-secondary">Interactive Dashboard</p>
+            <h1 class="text-3xl sm:text-4xl font-black tracking-tight gradient-text">The 30-Day Path From Rock Bottom to Competent</h1>
+            <p class="mt-2 text-base text-secondary">Study Well . God Bless You All</p>
         </header>
 
         <div class="mb-6 p-1 rounded-2xl flex-shrink-0 flex justify-center glass-card">
