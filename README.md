@@ -1,255 +1,451 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>The 30-Day Judgment: Interactive Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
-  <!-- Chosen Palette: Spartan Steel -->
-  <!-- Application Structure Plan: A single-page application with a primary top-tab navigation bar. The three tabs ("Mission Schedule", "Progress Tracker", "Exam Timetable") control the main view. The "Mission Schedule" tab now contains the motivational rules and countdown timer, followed by the full 30-day plan with scroll-spy and click-to-scroll functionality. -->
-  <!-- Visualization & Content Choices: Report Info: Daily study tasks & exam schedule. Goal: Track completion & view schedule. Viz/Presentation: Interactive checklist, Donut chart (overall) & stacked Bar chart (weekly), formatted timetable, and a real-time countdown. Interaction: All elements are interactive and state is persisted. Justification: A single hub for all planning, tracking, and motivation with a more traditional and clear tab navigation structure. Library/Method: Chart.js, vanilla JS with IntersectionObserver. -->
-  <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-  <style>
-    html, body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        overscroll-behavior-y: contain;
-    }
-    body {
-      background-color: #f1f5f9; /* slate-100 */
-      font-family: 'Inter', 'Segoe UI', sans-serif;
-      display: flex;
-      flex-direction: column;
-      padding: 1rem;
-    }
-
-    #app {
-        background-color: white;
-        border-radius: 28px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        max-width: 1100px;
-        margin: 0 auto;
-        height: 100%;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        position: relative;
-    }
-    #main-content-wrapper {
-        flex-grow: 1;
-        overflow-y: auto;
-        padding-right: 8px;
-    }
-    
-    .task-card {
-        transition: all 0.2s ease-in-out;
-        border-left-width: 4px;
-    }
-    .task-card.completed {
-        background-color: #f0fdf4;
-        border-left-color: #4ade80;
-    }
-    .task-card.pending {
-        border-left-color: #e2e8f0;
-    }
-    .day-selector-item.active {
-        background-color: #dc2626;
-        color: white;
-        font-weight: 700;
-        transform: scale(1.05);
-    }
-    .day-selector-item {
-        transition: all 0.2s ease-in-out;
-    }
-    .chart-container {
-        position: relative;
-        margin: auto;
-        height: 280px;
-        width: 100%;
-        max-width: 350px;
-    }
-     @media (min-width: 768px) {
-        .chart-container {
-            height: 320px;
+    <meta charset="UTF-8">
+    <title>The 30-Day Judgment: Ultimate Dark Mode</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* Base Dark Theme Foundation */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overscroll-behavior-y: contain;
         }
-    }
-    .tab.active {
-        background-color: #dc2626;
-        color: white;
-        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    }
-    .tab {
-        transition: all 0.2s ease-in-out;
-    }
-    .exam-card {
-        background-color: #f8fafc;
-        border-left-width: 4px;
-        transition: transform 0.2s;
-    }
-    .exam-card:hover {
-        transform: translateY(-2px);
-    }
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%); /* Gradient background */
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            color: #f1f5f9; /* Primary text */
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth transitions global */
+        }
 
-    #backToTopBtn {
-        position: absolute;
-        bottom: 1.5rem;
-        right: 1.5rem;
-        display: none;
-        transition: opacity 0.3s, transform 0.3s;
-        opacity: 0;
-        transform: translateY(10px);
-        z-index: 50;
-    }
-    #backToTopBtn.show {
-        display: flex;
-        opacity: 1;
-        transform: translateY(0);
-    }
-    .accordion-content {
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease-in-out;
-    }
-    .accordion-content.open {
-        max-height: 500px; /* Adjust as needed */
-    }
-  </style>
+        /* Keyframes for Shimmer Effect (animating background-position) */
+        @keyframes backgroundShine {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        /* Glassmorphism Effects & Main Container */
+        #app {
+            background: rgba(30, 41, 59, 0.8); /* Main container background */
+            backdrop-filter: blur(20px); /* Main container blur */
+            -webkit-backdrop-filter: blur(20px); /* Safari support */
+            border-radius: 16px; /* rounded-2xl */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); /* Enhanced shadow */
+            max-width: 1100px;
+            margin: 0 auto;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border */
+        }
+        #main-content-wrapper {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        /* Cards & Section Containers (Glassmorphism) */
+        .glass-card {
+            background: rgba(51, 65, 85, 0.6); /* Card background */
+            backdrop-filter: blur(10px); /* Card blur */
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 12px; /* rounded-xl */
+            border: 1px solid rgba(255, 255, 255, 0.08); /* Subtle border */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Layered shadow */
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .task-card, .exam-card {
+            position: relative;
+            overflow: hidden; /* Hide shimmer background outside */
+        }
+        .task-card:hover, .exam-card:hover {
+            transform: translateX(4px); /* Card hover animation */
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3), 0 0 20px rgba(59, 130, 246, 0.3); /* Enhanced shadow with glow */
+        }
+
+        /* Text Colors */
+        .text-primary { color: #f1f5f9; } /* slate-100 */
+        .text-secondary { color: #cbd5e1; } /* slate-300 */
+        .text-accent { color: #94a3b8; } /* slate-400 */
+
+        /* Headers with Gradient Text (Corrected to be more visible) */
+        .gradient-text {
+            background-image: linear-gradient(to right, #a7d9ff, #e0b0ff, #ffdab3); /* Brighter gradient: Light blue, light purple, light orange */
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* Buttons & Interactive Elements - Base Styles for Shimmer */
+        .tab, .day-selector-item, .quick-nav-btn {
+            background-size: 200% 100%; /* Make background larger for shimmer */
+            background-repeat: no-repeat;
+            position: relative;
+            overflow: hidden;
+            z-index: 1; /* Ensure content is above shimmer */
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .quick-nav-btn.orange {
+            background-image: linear-gradient(to right, #fb923c, #f97316); /* Base gradient for orange buttons */
+        }
+
+        /* Shimmer Effect Overlay (via pseudo-element animating background-position) */
+        .tab::before, .day-selector-item::before, .quick-nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0; 
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); /* Shimmer gradient */
+            background-size: 200% 100%; /* Make shimmer wider than element */
+            background-position: -100% 0; /* Start shimmer off-screen to the left */
+            animation: backgroundShine 1.5s infinite linear paused; /* Animation paused by default */
+            z-index: 2; /* Over button's base content, but content itself is not transparent */
+        }
+
+        .tab:hover::before, .day-selector-item:hover::before, .quick-nav-btn:hover::before {
+            animation-play-state: running; /* Run animation on hover */
+        }
+
+        /* Tab Specific Styles */
+        .tab {
+            color: #f1f5f9;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            border-radius: 12px; /* rounded-xl */
+            background-image: linear-gradient(to right, #1d4ed8, #1e40af); /* Darker blue gradient */
+            border: 1px solid transparent;
+        }
+        .tab.active {
+            background-image: linear-gradient(to right, #2563eb, #1d4ed8); /* blue-600 to blue-700 */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4), 0 0 15px rgba(59, 130, 246, 0.5); /* Enhanced shadow with glow */
+            transform: translateY(-2px); /* Lift on active */
+            border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle white border on active */
+        }
+        .tab:hover {
+            transform: translateY(-2px); /* Lift on hover */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4), 0 0 10px rgba(59, 130, 246, 0.4); /* Enhanced shadow with subtle glow */
+            color: #ffffff; /* Brighter text on hover */
+        }
+
+        /* Day Selector Buttons */
+        .day-selector-item {
+            background-color: transparent; /* Transparent background */
+            color: #f1f5f9; /* Primary text */
+            border: none; /* No border for a clean, floating look */
+            box-shadow: none; /* Remove default shadow */
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative; /* For shimmer */
+            overflow: hidden; /* For shimmer */
+            border-radius: 12px; /* rounded-xl */
+        }
+        .day-selector-item.active {
+            background-image: linear-gradient(to bottom right, #3b82f6, #2563eb); /* Primary blue gradient */
+            color: white;
+            font-weight: 700;
+            transform: scale(1.05); /* Scale on active */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4), 0 0 20px rgba(59, 130, 246, 0.5); /* Stronger glow on active */
+            border-color: transparent; /* No border on active */
+        }
+        .day-selector-item:hover {
+            transform: scale(1.05); /* Scale on hover */
+            background-color: rgba(59, 130, 246, 0.1); /* Subtle blue tint on hover */
+            border: 1px solid rgba(59, 130, 246, 0.2); /* Subtle border on hover */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        /* Quick Navigation Buttons (Timetable) */
+        .quick-nav-btn {
+            color: #f1f5f9;
+            font-weight: 600;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            border-radius: 9999px; /* rounded-full */
+            background-image: linear-gradient(to right, #3b82f6, #2563eb);
+        }
+        .quick-nav-btn:hover {
+            transform: translateY(-2px); /* Lift on hover */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4), 0 0 10px rgba(59, 130, 246, 0.4); /* Enhanced shadow with glow */
+        }
+        .quick-nav-btn.orange {
+            background-image: linear-gradient(to right, #fb923c, #f97316); /* Base gradient for orange buttons */
+        }
+        .quick-nav-btn.orange:hover {
+             box-shadow: 0 4px 8px rgba(0,0,0,0.4), 0 0 10px rgba(251, 146, 60, 0.4); /* Orange glow */
+        }
+
+        /* Countdown Numbers - Specific light blue highlight */
+        #countdown-text {
+            background-image: linear-gradient(to right, #e0f2fe, #bbdefb, #90caf9); /* Very light blue gradient */
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 900;
+            letter-spacing: -0.05em;
+            text-shadow: 
+                0 0 1px rgba(255,255,255,0.8), /* Light overall glow/outline */
+                0 0 5px rgba(144, 202, 249, 0.4); /* Subtle blue glow */
+        }
+
+        /* Exam Timetable - Visual Hierarchy */
+        .exam-card {
+            background: rgba(51, 65, 85, 0.6); /* Card background */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .exam-card strong {
+            color: #f1f5f9; /* Primary text for bolded dates */
+        }
+        .exam-card span.text-accent {
+            color: #94a3b8; /* Accent text for time, as per prompt */
+        }
+        .exam-card.border-blue-500 { border-left-color: #3b82f6; } /* Primary Blue for theory */
+        .exam-card.border-orange-500 { border-left-color: #fb923c; } /* Secondary Orange for practical */
+        
+        /* Charts - Adjusted for Dark Mode */
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 280px;
+            width: 100%;
+            max-width: 350px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 320px;
+            }
+        }
+        /* Chart specific styling */
+        .chartjs-render-monitor canvas {
+            background-color: rgba(51, 65, 85, 0.3) !important; /* Match card background opacity */
+            border-radius: 12px;
+        }
+        .chartjs-render-monitor .chartjs-grid-line {
+            stroke: rgba(255, 255, 255, 0.1) !important; /* Lighter grid lines */
+        }
+        .chartjs-render-monitor .chartjs-tooltip {
+            background-color: rgba(30, 41, 59, 0.9) !important;
+            color: #f1f5f9 !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            backdrop-filter: blur(5px) !important;
+        }
+        .chartjs-render-monitor .chartjs-tooltip-title,
+        .chartjs-render-monitor .chartjs-tooltip-label {
+            color: #f1f5f9 !important;
+        }
+        .chartjs-legend-labels li span {
+            background-color: inherit !important; /* Fix for legend colors */
+            border-radius: 4px;
+        }
+        .chartjs-legend-labels li {
+            color: #cbd5e1 !important; /* Secondary text color for legend labels */
+        }
+        
+        /* Sticky header for daily tasks */
+        #plan-details .sticky {
+            background: rgba(30, 41, 59, 0.8); /* Match main container background */
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Subtle separator */
+            z-index: 10;
+        }
+
+        /* Back to Top Button */
+        #backToTopBtn {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            display: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            transform: translateY(10px);
+            z-index: 50;
+            background: linear-gradient(to right, #ef4444, #dc2626); /* Red gradient */
+            color: white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4), 0 0 15px rgba(239, 68, 68, 0.5); /* Red glow */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        #backToTopBtn.show {
+            display: flex;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #backToTopBtn:hover {
+            transform: translateY(-5px) scale(1.1); /* More pronounced hover */
+            box-shadow: 0 6px 12px rgba(0,0,0,0.5), 0 0 20px rgba(239, 68, 68, 0.7);
+        }
+        #backToTopBtn svg {
+            width: 20px; /* Adjusted icon size to w-5 h-5 */
+            height: 20px;
+        }
+
+        /* Responsive Padding */
+        .p-4 { padding: 1rem; }
+        @media (min-width: 640px) { .sm\:p-6 { padding: 1.5rem; } }
+        @media (min-width: 768px) { .md\:p-8 { padding: 2rem; } }
+
+        /* Loading Animation */
+        .stagger-load-item {
+            opacity: 0; /* Starts hidden */
+            transform: translateY(20px); /* Starts below */
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out; /* Smooth transition */
+        }
+        .stagger-load-item.loaded {
+            opacity: 1; /* Fades in */
+            transform: translateY(0); /* Slides up */
+        }
+
+    </style>
 </head>
 <body>
 
-  <div id="app" class="text-gray-800 p-4 sm:p-6 lg:p-8">
-      <header class="text-center mb-4 flex-shrink-0">
-          <h1 class="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight">The 30-Day Path from Rock Bottom to Competent</h1>
-          <p class="mt-2 text-base text-gray-600">Interactive Dashboard . Study Well . God Bless You </p>
-      </header>
+    <div id="app" class="p-4 sm:p-6 md:p-8">
+        <header class="text-center mb-4 flex-shrink-0">
+            <h1 class="text-3xl sm:text-4xl font-black tracking-tight gradient-text">The 30-Day Path from Rock Bottom to Competent
+</h1>
+            <p class="mt-2 text-base text-secondary">Interactive Dashboard. Study Well . God Bless You All</p>
+        </header>
 
-      <div class="mb-6 p-1 bg-slate-100 rounded-full flex-shrink-0 flex justify-center">
-          <nav id="top-tab-nav" class="flex space-x-1" aria-label="Tabs">
-              <button data-view="view-mission-schedule" class="tab py-2 px-4 sm:px-6 rounded-full font-semibold text-sm text-gray-600 hover:bg-slate-200">Mission Schedule</button>
-              <button data-view="view-progress" class="tab py-2 px-4 sm:px-6 rounded-full font-semibold text-sm text-gray-600 hover:bg-slate-200">Progress Tracker</button>
-              <button data-view="view-timetable" class="tab py-2 px-4 sm:px-6 rounded-full font-semibold text-sm text-gray-600 hover:bg-slate-200">Exam Timetable</button>
-          </nav>
-      </div>
+        <div class="mb-6 p-1 rounded-2xl flex-shrink-0 flex justify-center glass-card">
+            <nav id="top-tab-nav" class="flex space-x-1 p-1 rounded-xl" aria-label="Tabs">
+                <button data-view="view-mission-schedule" class="tab py-2 px-4 sm:px-6 font-semibold text-sm">Mission Schedule</button>
+                <button data-view="view-progress" class="tab py-2 px-4 sm:px-6 font-semibold text-sm">Progress Tracker</button>
+                <button data-view="view-timetable" class="tab py-2 px-4 sm:px-6 font-semibold text-sm">Exam Timetable</button>
+            </nav>
+        </div>
 
-      <div id="main-content-wrapper">
-          <main id="main-content">
-              <div id="view-mission-schedule">
-                  <div class="mb-8 p-4 bg-slate-100 rounded-xl flex items-center gap-4">
-                      <div class="w-20 h-20 flex-shrink-0">
-                          <canvas id="countdownChart"></canvas>
-                      </div>
-                      <div class="flex-grow">
-                          <h2 class="text-base font-bold text-gray-800">Time Until First Exam</h2>
-                          <div id="countdown-text" class="text-2xl md:text-3xl font-black text-red-600 tracking-tighter">
-                              <span id="days">00</span>d : 
-                              <span id="hours">00</span>h : 
-                              <span id="minutes">00</span>m : 
-                              <span id="seconds">00</span>s
-                          </div>
-                      </div>
-                  </div>
-                  <div class="flex flex-col lg:flex-row gap-8">
-                      <aside class="w-full lg:w-1/3 xl:w-1/4 lg:sticky top-4 self-start">
-                          <h2 class="text-xl font-bold mb-4 text-gray-900">Mission Schedule</h2>
-                          <div id="day-selector" class="space-y-4 bg-white p-4 rounded-xl shadow-sm"></div>
-                      </aside>
-                      <section id="plan-details" class="w-full lg:w-2/3 xl:w-3/4"></section>
-                  </div>
-              </div>
-              <div id="view-progress" class="hidden">
-                   <div class="text-center mb-8">
-                      <h2 class="text-2xl font-bold text-gray-900">Your Progress Report</h2>
-                      <p class="text-gray-600 mt-1">This is a real-time reflection of your work. Make the numbers go up.</p>
-                  </div>
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                      <div class="bg-white p-6 rounded-xl shadow-sm">
-                          <h3 class="font-bold text-lg text-center mb-4">Overall Completion</h3>
-                          <div class="chart-container">
-                              <canvas id="overallProgressChart"></canvas>
-                          </div>
-                      </div>
-                      <div class="bg-white p-6 rounded-xl shadow-sm">
-                          <h3 class="font-bold text-lg text-center mb-4">Weekly Task Completion</h3>
-                           <div class="chart-container" style="max-width: 600px;">
-                              <canvas id="weeklyProgressChart"></canvas>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-              <div id="view-timetable" class="hidden">
-                  <div class="bg-white p-4 sm:p-6 rounded-xl shadow-sm">
-                      <h2 class="text-2xl font-bold text-gray-900 mb-4">Final Examination Schedule</h2>
-                      <div class="mb-6 p-4 bg-slate-50 rounded-lg">
-                          <h3 class="font-semibold text-gray-700 mb-3">Quick Navigation</h3>
-                          <div class="flex flex-wrap gap-2">
-                              <button onclick="scrollToExam('date-18', 'theory')" class="text-xs font-semibold bg-blue-100 text-blue-800 py-1 px-3 rounded-full hover:bg-blue-200 transition">Aug 18 (Theory)</button>
-                              <button onclick="scrollToExam('date-20', 'theory')" class="text-xs font-semibold bg-blue-100 text-blue-800 py-1 px-3 rounded-full hover:bg-blue-200 transition">Aug 20 (Theory)</button>
-                              <button onclick="scrollToExam('date-22', 'theory')" class="text-xs font-semibold bg-blue-100 text-blue-800 py-1 px-3 rounded-full hover:bg-blue-200 transition">Aug 22 (Theory)</button>
-                              <button onclick="scrollToExam('date-23', 'theory')" class="text-xs font-semibold bg-blue-100 text-blue-800 py-1 px-3 rounded-full hover:bg-blue-200 transition">Aug 23 (Theory)</button>
-                              <button onclick="scrollToExam('date-25', 'practical')" class="text-xs font-semibold bg-orange-100 text-orange-800 py-1 px-3 rounded-full hover:bg-orange-200 transition">Practicals</button>
-                          </div>
-                      </div>
-                      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div class="theory">
-                              <h2 class="font-semibold text-lg text-blue-700 mb-2">Theory Examinations</h2>
-                              <ul class="space-y-4 text-sm sm:text-base">
-                                  <li id="date-18" class="exam-card border-blue-500 p-4 rounded-lg">
-                                    <strong>18.08.2025 (Monday)</strong><br>
-                                    PHAR 205T – Pharmacology (I & II)<br>
-                                    PATH 210T – Pathology (I & II) (Including Genetics)<br>
-                                    <strong>Time:</strong> 10:00 A.M. – 1:00 P.M.
-                                  </li>
-                                  <li id="date-20" class="exam-card border-blue-500 p-4 rounded-lg">
-                                    <strong>20.08.2025 (Wednesday)</strong><br>
-                                    N-AHN 225T – Adult Health Nursing II with Integrated Pathophysiology, Geriatric Nursing & Palliative Care<br>
-                                    <strong>Time:</strong> 10:00 A.M. – 1:00 P.M.
-                                  </li>
-                                  <li id="date-22" class="exam-card border-blue-500 p-4 rounded-lg">
-                                    <strong>22.08.2025 (Friday)</strong><br>
-                                    PROF 230 – Professionalism, Professional Values & Ethics (Including Bioethics)<br>
-                                    <strong>Time:</strong> 10:00 A.M. – 1:00 P.M.
-                                  </li>
-                                  <li id="date-23" class="exam-card border-blue-500 p-4 rounded-lg">
-                                    <strong>23.08.2025 (Saturday)</strong><br>
-                                    ELEC 1 – Human Values (Elective)<br>
-                                    <strong>Time:</strong> 10:00 A.M. – 1:00 P.M.
-                                  </li>
-                              </ul>
-                          </div>
-                          <div class="practical">
-                              <h2 class="font-semibold text-lg text-orange-700 mb-2">Practical Examinations</h2>
-                              <ul class="space-y-4 text-sm sm:text-base">
-                                  <li id="date-25" class="exam-card border-orange-500 p-4 rounded-lg">
-                                    <strong>25.08.2025 (Monday)</strong><br>
-                                    N-AHN 225P – Adult Health Nursing II Practical
-                                  </li>
-                                  <li id="date-26" class="exam-card border-orange-500 p-4 rounded-lg">
-                                    <strong>26.08.2025 (Tuesday)</strong><br>
-                                    N-AHN 225P – Adult Health Nursing II Practical
-                                  </li>
-                                  <li id="date-28" class="exam-card border-orange-500 p-4 rounded-lg">
-                                    <strong>28.08.2025 (Thursday)</strong><br>
-                                    N-AHN 225P – Adult Health Nursing II Practical
-                                  </li>
-                                  <li id="date-29" class="exam-card border-orange-500 p-4 rounded-lg">
-                                    <strong>29.08.2025 (Friday)</strong><br>
-                                    N-AHN 225P – Adult Health Nursing II Practical
-                                  </li>
-                              </ul>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-          </main>
-      </div>
-      
-      <button id="backToTopBtn" class="bg-red-600 text-white rounded-full shadow-lg hover:bg-red-700 p-3 flex items-center justify-center">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg>
-      </button>
-  </div>
+        <div id="main-content-wrapper">
+            <main id="main-content">
+                <div id="view-mission-schedule">
+                    <div class="mb-8 p-4 rounded-xl flex items-center gap-4 glass-card">
+                        <div class="w-20 h-20 flex-shrink-0">
+                            <canvas id="countdownChart"></canvas>
+                        </div>
+                        <div class="flex-grow">
+                            <h2 class="text-base font-bold text-primary">Time Until First Exam</h2>
+                            <div id="countdown-text" class="text-2xl md:text-3xl font-black tracking-tighter">
+                                <span id="days">00</span>d : 
+                                <span id="hours">00</span>h : 
+                                <span id="minutes">00</span>m : 
+                                <span id="seconds">00</span>s
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col lg:flex-row gap-8">
+                        <aside class="w-full lg:w-1/3 xl:w-1/4 lg:sticky top-4 self-start glass-card">
+                            <h2 class="text-xl font-bold mb-4 gradient-text">Mission Schedule</h2>
+                            <div id="day-selector" class="space-y-4 p-4 rounded-xl shadow-sm glass-card"></div>
+                        </aside>
+                        <section id="plan-details" class="w-full lg:w-2/3 xl:w-3/4"></section>
+                    </div>
+                </div>
+                <div id="view-progress" class="hidden">
+                        <div class="text-center mb-8">
+                            <h2 class="text-2xl font-bold gradient-text">Your Progress Report</h2>
+                            <p class="mt-1 text-secondary">This is a real-time reflection of your work. Make the numbers go up.</p>
+                        </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                        <div class="p-6 rounded-xl shadow-sm glass-card">
+                            <h3 class="font-bold text-lg text-center mb-4 text-primary">Overall Completion</h3>
+                            <div class="chart-container">
+                                <canvas id="overallProgressChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="p-6 rounded-xl shadow-sm glass-card">
+                            <h3 class="font-bold text-lg text-center mb-4 text-primary">Weekly Task Completion</h3>
+                                <div class="chart-container" style="max-width: 600px;">
+                                    <canvas id="weeklyProgressChart"></canvas>
+                                </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="view-timetable" class="hidden">
+                    <div class="p-4 sm:p-6 rounded-xl shadow-sm glass-card">
+                        <h2 class="text-2xl font-bold gradient-text mb-4">Final Examination Schedule</h2>
+                        <div class="mb-6 p-4 rounded-xl glass-card">
+                            <h3 class="font-semibold text-primary mb-3">Quick Navigation</h3>
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="scrollToExam('date-18', 'theory')" class="quick-nav-btn py-1 px-3 rounded-full text-xs font-semibold">Aug 18 (Theory)</button>
+                                <button onclick="scrollToExam('date-20', 'theory')" class="quick-nav-btn py-1 px-3 rounded-full text-xs font-semibold">Aug 20 (Theory)</button>
+                                <button onclick="scrollToExam('date-22', 'theory')" class="quick-nav-btn py-1 px-3 rounded-full text-xs font-semibold">Aug 22 (Theory)</button>
+                                <button onclick="scrollToExam('date-23', 'theory')" class="quick-nav-btn py-1 px-3 rounded-full text-xs font-semibold">Aug 23 (Theory)</button>
+                                <button onclick="scrollToExam('date-25', 'practical')" class="quick-nav-btn orange py-1 px-3 rounded-full text-xs font-semibold">Practicals</button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="theory">
+                                <h2 class="font-semibold text-lg text-primary mb-2">Theory Examinations</h2>
+                                <ul class="space-y-4 text-sm sm:text-base">
+                                    <li id="date-18" class="exam-card border-l-4 border-blue-500 p-4 rounded-xl">
+                                        <strong class="text-primary">18.08.2025 (Monday)</strong><br>
+                                        PHAR 205T – Pharmacology (I & II)<br>
+                                        PATH 210T – Pathology (I & II) (Including Genetics)<br>
+                                        <span class="text-accent">Time:</span> 10:00 A.M. – 1:00 P.M.
+                                    </li>
+                                    <li id="date-20" class="exam-card border-l-4 border-blue-500 p-4 rounded-xl">
+                                        <strong class="text-primary">20.08.2025 (Wednesday)</strong><br>
+                                        N-AHN 225T – Adult Health Nursing II with Integrated Pathophysiology, Geriatric Nursing & Palliative Care<br>
+                                        <span class="text-accent">Time:</span> 10:00 A.M. – 1:00 P.M.
+                                    </li>
+                                    <li id="date-22" class="exam-card border-l-4 border-blue-500 p-4 rounded-xl">
+                                        <strong class="text-primary">22.08.2025 (Friday)</strong><br>
+                                        PROF 230 – Professionalism, Professional Values & Ethics (Including Bioethics)<br>
+                                        <span class="text-accent">Time:</span> 10:00 A.M. – 1:00 P.M.
+                                    </li>
+                                    <li id="date-23" class="exam-card border-l-4 border-blue-500 p-4 rounded-xl">
+                                        <strong class="text-primary">23.08.2025 (Saturday)</strong><br>
+                                        ELEC 1 – Human Values (Elective)<br>
+                                        <span class="text-accent">Time:</span> 10:00 A.M. – 1:00 P.M.
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="practical">
+                                <h2 class="font-semibold text-lg text-primary mb-2">Practical Examinations</h2>
+                                <ul class="space-y-4 text-sm sm:text-base">
+                                    <li id="date-25" class="exam-card border-l-4 border-orange-500 p-4 rounded-xl">
+                                        <strong class="text-primary">25.08.2025 (Monday)</strong><br>
+                                        N-AHN 225P – Adult Health Nursing II Practical
+                                    </li>
+                                    <li id="date-26" class="exam-card border-l-4 border-orange-500 p-4 rounded-xl">
+                                        <strong class="text-primary">26.08.2025 (Tuesday)</strong><br>
+                                        N-AHN 225P – Adult Health Nursing II Practical
+                                    </li>
+                                    <li id="date-28" class="exam-card border-l-4 border-orange-500 p-4 rounded-xl">
+                                        <strong class="text-primary">28.08.2025 (Thursday)</strong><br>
+                                        N-AHN 225P – Adult Health Nursing II Practical
+                                    </li>
+                                    <li id="date-29" class="exam-card border-l-4 border-orange-500 p-4 rounded-xl">
+                                        <strong class="text-primary">29.08.2025 (Friday)</strong><br>
+                                        N-AHN 225P – Adult Health Nursing II Practical
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+        
+        <button id="backToTopBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg>
+        </button>
+    </div>
 
 <script>
 const planData = [
@@ -260,7 +456,7 @@ const planData = [
         { subject: "Professionalism", details: "Unit I: Define 'Profession' & its criteria (VSN, Sess. I; MCQ, Sess. I)." },
         { subject: "Genetics", details: "Unit I: Practical application of genetics in nursing; Impact on families; Cellular division: mitosis & meiosis." },
         { subject: "Pharmacology I (3rd Sem)", details: "Unit 1: Factors affecting drug absorption (Essay, Apr 2013); Define first-pass metabolism (VSN, Sess. I)." },
-        { subject: "Pathology I (3rd Sem)", details: "Unit I: Necrosis (SN, Sep 2017; SN, Feb 2009); Types of necrosis with organ examples (Essay, Oct 2022; SN, Feb 2013)." }
+        { subject: "Pathology I (3rd Sem)", details: "Unit 1: Necrosis (SN, Sep 2017; SN, Feb 2009); Types of necrosis with organ examples (Essay, Oct 2022; SN, Feb 2013)." }
     ]},
     { day: 2, week: 1, title: "THE PURGE", tasks: [
         { subject: "Pharmacology I (3rd Sem)", details: "Unit 1: Principles of drug admin (Notes, Aug 2024; Essay, Sep 2015); Pharmacodynamics, Drug Antagonism, Synergism, Tolerance, Receptors." },
@@ -513,7 +709,7 @@ function renderDaySelector() {
         weekContainer.className = 'mb-4';
 
         const weekHeader = document.createElement('button');
-        weekHeader.className = 'w-full text-left text-lg font-bold text-gray-800 mb-2 flex justify-between items-center';
+        weekHeader.className = 'w-full text-left text-lg font-bold text-primary mb-2 flex justify-between items-center'; 
         weekHeader.innerHTML = `<span>Week ${weekNumber}: ${weekData.title}</span><svg class="w-5 h-5 transition-transform" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>`;
         
         const dayGrid = document.createElement('div');
@@ -523,7 +719,7 @@ function renderDaySelector() {
             const dayButton = document.createElement('button');
             dayButton.textContent = dayNum;
             dayButton.dataset.day = dayNum;
-            dayButton.className = 'day-selector-item p-2 aspect-square flex items-center justify-center rounded-lg text-xs font-medium text-center shadow-sm border border-slate-200 hover:bg-red-500 hover:text-white';
+            dayButton.className = 'day-selector-item p-2 aspect-square flex items-center justify-center rounded-xl text-xs font-medium text-center shadow-sm';
             dayGrid.appendChild(dayButton);
         });
         
@@ -548,7 +744,7 @@ function renderAllPlans() {
     const detailsContainer = document.getElementById('plan-details');
     detailsContainer.innerHTML = '';
 
-    planData.forEach(dayData => {
+    planData.forEach((dayData, dayIndex) => {
         const daySection = document.createElement('div');
         daySection.id = `day-plan-${dayData.day}`;
         daySection.className = 'day-plan-section pt-8 -mt-8';
@@ -558,13 +754,13 @@ function renderAllPlans() {
             const taskId = `day-${dayData.day}-task-${index}`;
             const isCompleted = appState.completionStatus[taskId] || false;
             tasksHtml += `
-                <div class="task-card p-4 rounded-lg bg-white shadow-sm flex items-start gap-4 ${isCompleted ? 'completed' : 'pending'}">
+                <div class="task-card p-4 rounded-xl shadow-sm flex items-start gap-4 ${isCompleted ? 'completed' : 'pending'} stagger-load-item">
                     <div>
-                        <input type="checkbox" id="${taskId}" data-day="${dayData.day}" data-task-index="${index}" class="mt-1 h-5 w-5 rounded border-gray-300 text-red-600 focus:ring-red-500 cursor-pointer" ${isCompleted ? 'checked' : ''}>
+                        <input type="checkbox" id="${taskId}" data-day="${dayData.day}" data-task-index="${index}" class="mt-1 h-5 w-5 rounded border-slate-300 text-blue-500 focus:ring-blue-500 cursor-pointer" ${isCompleted ? 'checked' : ''}>
                     </div>
                     <div>
-                        <label for="${taskId}" class="font-bold text-gray-800">${task.subject}</label>
-                        <p class="text-gray-600 text-sm mt-1">${task.details}</p>
+                        <label for="${taskId}" class="font-bold text-primary">${task.subject}</label>
+                        <p class="text-secondary text-sm mt-1">${task.details}</p>
                     </div>
                 </div>
             `;
@@ -572,7 +768,7 @@ function renderAllPlans() {
 
         daySection.innerHTML = `
             <div class="p-1 mb-10">
-                <h2 class="text-2xl font-black text-gray-900 sticky top-0 bg-white/80 backdrop-blur-sm py-2 z-10">Day ${dayData.day}: Daily Tasks</h2>
+                <h2 class="text-2xl font-black text-primary sticky top-0 py-2 z-10" style="background-color: rgba(30, 41, 59, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">Day ${dayData.day}: Daily Tasks</h2>
                 <div class="mt-6 space-y-4">${tasksHtml}</div>
             </div>
         `;
@@ -597,7 +793,7 @@ function setupScrollSpy() {
 
     const options = {
         root: document.getElementById('main-content-wrapper'),
-        rootMargin: '0px 0px -75% 0px',
+        rootMargin: '0px 0px -50% 0px', /* Adjusted for better scroll-spy accuracy */
         threshold: 0
     };
 
@@ -647,9 +843,9 @@ function calculateProgress() {
 }
 
 function renderCharts() {
-    const progress = calculateProgress();
     const overallCtx = document.getElementById('overallProgressChart').getContext('2d');
     const weeklyCtx = document.getElementById('weeklyProgressChart').getContext('2d');
+    const progress = calculateProgress();
 
     if (overallProgressChart) overallProgressChart.destroy();
     overallProgressChart = new Chart(overallCtx, {
@@ -658,8 +854,8 @@ function renderCharts() {
             labels: ['Completed', 'Pending'],
             datasets: [{
                 data: [progress.completed, progress.total - progress.completed],
-                backgroundColor: ['#4ade80', '#e2e8f0'],
-                borderColor: ['#f8fafc'],
+                backgroundColor: ['#4CAF50', 'rgba(148, 163, 184, 0.5)'], /* Material Green, Slate-400 with opacity */
+                borderColor: ['rgba(51, 65, 85, 0.6)'], /* Card background color */
                 borderWidth: 4,
             }]
         },
@@ -680,13 +876,13 @@ function renderCharts() {
                 {
                     label: 'Completed',
                     data: Object.values(progress.weeklyCompleted),
-                    backgroundColor: '#4ade80',
+                    backgroundColor: '#4CAF50', /* Material Green */
                     borderRadius: 4,
                 },
                 {
                     label: 'Pending',
                     data: Object.values(progress.weeklyPending),
-                    backgroundColor: '#e2e8f0',
+                    backgroundColor: 'rgba(148, 163, 184, 0.5)', /* Slate-400 with opacity */
                     borderRadius: 4,
                 }
             ]
@@ -695,17 +891,33 @@ function renderCharts() {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                y: { stacked: true, beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { precision: 0 } },
-                x: { stacked: true, grid: { display: false } }
+                y: { 
+                    stacked: true, 
+                    beginAtZero: true, 
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' }, /* Lighter grid lines */
+                    ticks: { precision: 0, color: '#cbd5e1' } /* Secondary text color */
+                },
+                x: { 
+                    stacked: true, 
+                    grid: { display: false },
+                    ticks: { color: '#cbd5e1' } /* Secondary text color */
+                }
             },
-            plugins: { legend: { position: 'bottom' }, tooltip: { enabled: true, mode: 'index' } }
+            plugins: { 
+                legend: { 
+                    position: 'bottom', 
+                    labels: { color: '#cbd5e1' } /* Secondary text color for legend labels */
+                }, 
+                tooltip: { enabled: true, mode: 'index' } 
+            }
         }
     });
 }
 
 function startCountdown() {
-    const countdownDate = new Date("2025-08-18T10:00:00").getTime();
-    const startDate = new Date("2025-07-01T00:00:00").getTime();
+    const countdownDate = new Date("2025-08-18T10:00:00+05:30").getTime(); // Exam date and time (IST)
+    const startDate = new Date("2025-07-01T00:00:00+05:30").getTime(); // Starting point for progress bar
+
     const totalDuration = countdownDate - startDate;
 
     const countdownCtx = document.getElementById('countdownChart').getContext('2d');
@@ -715,8 +927,9 @@ function startCountdown() {
         data: {
             datasets: [{
                 data: [0, 100],
-                backgroundColor: ['#dc2626', '#e5e7eb'],
-                borderWidth: 0,
+                backgroundColor: ['#3b82f6', 'rgba(148, 163, 184, 0.4)'], /* Primary Blue, Slate-400 with opacity */
+                borderColor: ['rgba(51, 65, 85, 0.6)'],
+                borderWidth: 4,
             }]
         },
         options: {
@@ -731,8 +944,8 @@ function startCountdown() {
     if (countdownInterval) clearInterval(countdownInterval);
 
     countdownInterval = setInterval(() => {
-        const now = new Date().getTime();
-        const distance = countdownDate - now;
+        const currentRealTime = new Date().getTime(); // Use current real time for live update
+        const distance = countdownDate - currentRealTime;
 
         if (distance < 0) {
             clearInterval(countdownInterval);
@@ -752,7 +965,7 @@ function startCountdown() {
         document.getElementById("minutes").innerText = String(minutes).padStart(2, '0');
         document.getElementById("seconds").innerText = String(seconds).padStart(2, '0');
         
-        const elapsed = now - startDate;
+        const elapsed = currentRealTime - startDate;
         const elapsedPercent = (elapsed / totalDuration) * 100;
         countdownChart.data.datasets[0].data = [elapsedPercent, 100 - elapsedPercent];
         countdownChart.update('none');
@@ -782,7 +995,7 @@ function scrollToExam(id, type) {
         setTimeout(() => {
             const element = document.getElementById(id);
             if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' }); /* Smooth scroll to center */
             }
         }, 100);
     }, 50);
@@ -800,18 +1013,35 @@ function switchView(viewId) {
     if (viewId === 'view-progress') {
         renderCharts();
     } else if (viewId === 'view-timetable') {
-        const theory = document.querySelector('#view-timetable .theory');
-        const practical = document.querySelector('#view-timetable .practical');
-        if(theory) theory.style.display = 'block';
-        if(practical) practical.style.display = 'block';
+        // Ensure all timetable content is visible when switching to this view
+        const theoryDiv = document.querySelector('#view-timetable .theory');
+        const practicalDiv = document.querySelector('#view-timetable .practical');
+        if (theoryDiv) theoryDiv.style.display = 'block';
+        if (practicalDiv) practicalDiv.style.display = 'block';
+    }
+
+    // Apply staggered load animation for the newly active view's content
+    const currentViewContent = document.getElementById(viewId);
+    if (currentViewContent) {
+        const staggerItems = currentViewContent.querySelectorAll('.stagger-load-item');
+        staggerItems.forEach((item, index) => {
+            // Reset 'loaded' class to ensure animation plays again if view is re-activated
+            item.classList.remove('loaded'); 
+            // Force browser to re-calculate style to ensure animation restarts from the initial state (opacity:0, translateY:20px)
+            void item.offsetWidth; 
+            setTimeout(() => {
+                item.classList.add('loaded');
+            }, index * 100); // Stagger by 100ms per item
+        });
     }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Corrected initialization order
     loadState();
-    switchView('view-mission-schedule');
     renderDaySelector();
-    renderAllPlans();
+    renderAllPlans(); // Render content first
+    switchView('view-mission-schedule'); // Then switch view to apply animations
     setActiveDay(appState.currentDay);
     setupScrollSpy();
     startCountdown();
@@ -826,7 +1056,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const day = parseInt(button.dataset.day, 10);
             const targetElement = document.getElementById(`day-plan-${day}`);
             if (targetElement) {
-                targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' }); /* Smooth scroll to center */
             }
         }
     });
