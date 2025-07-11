@@ -13,206 +13,188 @@
             margin: 0;
             padding: 0;
             overscroll-behavior-y: contain;
+            overflow: hidden; /* Prevent body scrolling */
         }
         body {
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%); /* Gradient background */
             font-family: 'Inter', 'Segoe UI', sans-serif;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             padding: 1rem;
             color: #f1f5f9; /* Primary text */
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth transitions global */
         }
 
-        /* Keyframes for Shimmer Effect (animating background-position) */
+        /* Keyframes for Shimmer Effect */
         @keyframes backgroundShine {
             0% { background-position: -200% 0; }
             100% { background-position: 200% 0; }
         }
 
-        /* Glassmorphism Effects & Main Container */
+        /* Main App Container */
         #app {
-            background: rgba(30, 41, 59, 0.8); /* Main container background */
-            backdrop-filter: blur(20px); /* Main container blur */
-            -webkit-backdrop-filter: blur(20px); /* Safari support */
-            border-radius: 16px; /* rounded-2xl */
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); /* Enhanced shadow */
-            max-width: 1100px;
-            margin: 0 auto;
-            height: 100%;
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            max-width: 1200px;
             width: 100%;
+            height: 95vh;
+            max-height: 900px;
             display: flex;
             flex-direction: column;
             position: relative;
-            border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border */
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         #main-content-wrapper {
             flex-grow: 1;
             overflow-y: auto;
-            padding-right: 8px;
+            padding-right: 8px; /* For custom scrollbar */
         }
 
-        /* Cards & Section Containers (Glassmorphism) */
+        /* Custom Scrollbar */
+        #main-content-wrapper::-webkit-scrollbar { width: 8px; }
+        #main-content-wrapper::-webkit-scrollbar-track { background: transparent; }
+        #main-content-wrapper::-webkit-scrollbar-thumb { background-color: rgba(148, 163, 184, 0.4); border-radius: 10px; border: 2px solid transparent; background-clip: content-box; }
+        #main-content-wrapper::-webkit-scrollbar-thumb:hover { background-color: rgba(148, 163, 184, 0.6); }
+
+        /* Glassmorphism Cards */
         .glass-card {
-            background: rgba(51, 65, 85, 0.6); /* Card background */
-            backdrop-filter: blur(10px); /* Card blur */
+            background: rgba(51, 65, 85, 0.5);
+            backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            border-radius: 12px; /* rounded-xl */
-            border: 1px solid rgba(255, 255, 255, 0.08); /* Subtle border */
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Layered shadow */
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .task-card, .exam-card {
+        .task-card {
             position: relative;
-            overflow: hidden; /* Hide shimmer background outside */
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1rem;
+        }
+        .exam-card {
+            position: relative;
+            overflow: hidden;
         }
         .task-card:hover, .exam-card:hover {
-            transform: translateX(4px); /* Card hover animation */
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3), 0 0 20px rgba(59, 130, 246, 0.3); /* Enhanced shadow with glow */
+            transform: translateY(-2px) translateX(2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3), 0 0 20px rgba(59, 130, 246, 0.3);
         }
 
-        /* Text Colors */
-        .text-primary { color: #f1f5f9; } /* slate-100 */
-        .text-secondary { color: #cbd5e1; } /* slate-300 */
-        .text-accent { color: #94a3b8; } /* slate-400 */
-
-        /* Headers with Gradient Text (Corrected to be more visible) */
+        /* Text Styles */
+        .text-primary { color: #f1f5f9; }
+        .text-secondary { color: #cbd5e1; }
+        .text-accent { color: #94a3b8; }
         .gradient-text {
-            background-image: linear-gradient(to right, #a7d9ff, #e0b0ff, #ffdab3); /* Brighter gradient: Light blue, light purple, light orange */
+            background-image: linear-gradient(to right, #a7d9ff, #e0b0ff, #ffdab3);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
         }
 
-        /* Buttons & Interactive Elements - Base Styles for Shimmer */
+        /* Buttons & Interactive Elements */
         .tab, .day-selector-item, .quick-nav-btn {
-            background-size: 200% 100%; /* Make background larger for shimmer */
+            background-size: 200% 100%;
             background-repeat: no-repeat;
             position: relative;
             overflow: hidden;
-            z-index: 1; /* Ensure content is above shimmer */
+            z-index: 1;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .quick-nav-btn.orange {
-            background-image: linear-gradient(to right, #fb923c, #f97316); /* Base gradient for orange buttons */
-        }
+        .quick-nav-btn.orange { background-image: linear-gradient(to right, #fb923c, #f97316); }
 
-        /* Shimmer Effect Overlay (via pseudo-element animating background-position) */
+        /* Shimmer Effect */
         .tab::before, .day-selector-item::before, .quick-nav-btn::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0; 
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); /* Shimmer gradient */
-            background-size: 200% 100%; /* Make shimmer wider than element */
-            background-position: -100% 0; /* Start shimmer off-screen to the left */
-            animation: backgroundShine 1.5s infinite linear paused; /* Animation paused by default */
-            z-index: 2; /* Over button's base content, but content itself is not transparent */
+            top: 0; left: 0; 
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            background-size: 200% 100%;
+            background-position: -100% 0;
+            animation: backgroundShine 1.5s infinite linear paused;
+            z-index: 2;
         }
-
         .tab:hover::before, .day-selector-item:hover::before, .quick-nav-btn:hover::before {
-            animation-play-state: running; /* Run animation on hover */
+            animation-play-state: running;
         }
 
-        /* Tab Specific Styles */
+        /* Tab Styles */
         .tab {
             color: #f1f5f9;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            border-radius: 12px; /* rounded-xl */
-            background-image: linear-gradient(to right, #1d4ed8, #1e40af); /* Darker blue gradient */
+            border-radius: 12px;
+            background-image: linear-gradient(to right, #1d4ed8, #1e40af);
             border: 1px solid transparent;
         }
         .tab.active {
-            background-image: linear-gradient(to right, #2563eb, #1d4ed8); /* blue-600 to blue-700 */
-            box-shadow: 0 4px 8px rgba(0,0,0,0.4), 0 0 15px rgba(59, 130, 246, 0.5); /* Enhanced shadow with glow */
-            transform: translateY(-2px); /* Lift on active */
-            border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle white border on active */
+            background-image: linear-gradient(to right, #2563eb, #1d4ed8);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4), 0 0 15px rgba(59, 130, 246, 0.5);
+            transform: translateY(-2px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         .tab:hover {
-            transform: translateY(-2px); /* Lift on hover */
-            box-shadow: 0 4px 8px rgba(0,0,0,0.4), 0 0 10px rgba(59, 130, 246, 0.4); /* Enhanced shadow with subtle glow */
-            color: #ffffff; /* Brighter text on hover */
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4), 0 0 10px rgba(59, 130, 246, 0.4);
+            color: #ffffff;
         }
 
-        /* Day Selector Buttons */
+        /* Day Selector */
         .day-selector-item {
-            background-color: transparent; /* Transparent background */
-            color: #f1f5f9; /* Primary text */
-            border: none; /* No border for a clean, floating look */
-            box-shadow: none; /* Remove default shadow */
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative; /* For shimmer */
-            overflow: hidden; /* For shimmer */
-            border-radius: 12px; /* rounded-xl */
+            background-color: transparent;
+            color: #f1f5f9;
+            border: none;
+            box-shadow: none;
+            border-radius: 12px;
         }
         .day-selector-item.active {
-            background-image: linear-gradient(to bottom right, #3b82f6, #2563eb); /* Primary blue gradient */
+            background-image: linear-gradient(to bottom right, #3b82f6, #2563eb);
             color: white;
             font-weight: 700;
-            transform: scale(1.05); /* Scale on active */
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4), 0 0 20px rgba(59, 130, 246, 0.5); /* Stronger glow on active */
-            border-color: transparent; /* No border on active */
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4), 0 0 20px rgba(59, 130, 246, 0.5);
         }
         .day-selector-item:hover {
-            transform: scale(1.05); /* Scale on hover */
-            background-color: rgba(59, 130, 246, 0.1); /* Subtle blue tint on hover */
-            border: 1px solid rgba(59, 130, 246, 0.2); /* Subtle border on hover */
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            transform: scale(1.05);
+            background-color: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
         }
 
-        /* Quick Navigation Buttons (Timetable) */
+        /* Quick Nav Buttons */
         .quick-nav-btn {
             color: #f1f5f9;
             font-weight: 600;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            border-radius: 9999px; /* rounded-full */
+            border-radius: 9999px;
             background-image: linear-gradient(to right, #3b82f6, #2563eb);
         }
         .quick-nav-btn:hover {
-            transform: translateY(-2px); /* Lift on hover */
-            box-shadow: 0 4px 8px rgba(0,0,0,0.4), 0 0 10px rgba(59, 130, 246, 0.4); /* Enhanced shadow with glow */
-        }
-        .quick-nav-btn.orange {
-            background-image: linear-gradient(to right, #fb923c, #f97316); /* Base gradient for orange buttons */
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4), 0 0 10px rgba(59, 130, 246, 0.4);
         }
         .quick-nav-btn.orange:hover {
-             box-shadow: 0 4px 8px rgba(0,0,0,0.4), 0 0 10px rgba(251, 146, 60, 0.4); /* Orange glow */
+             box-shadow: 0 4px 8px rgba(0,0,0,0.4), 0 0 10px rgba(251, 146, 60, 0.4);
         }
 
-        /* Countdown Numbers - Specific light blue highlight */
+        /* Countdown Text */
         #countdown-text {
-            background-image: linear-gradient(to right, #e0f2fe, #bbdefb, #90caf9); /* Very light blue gradient */
+            background-image: linear-gradient(to right, #67e8f9, #f472b6); /* Light Cyan to Light Pink */
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
             font-weight: 900;
             letter-spacing: -0.05em;
-            text-shadow: 
-                0 0 1px rgba(255,255,255,0.8), /* Light overall glow/outline */
-                0 0 5px rgba(144, 202, 249, 0.4); /* Subtle blue glow */
+            text-shadow: 0 0 10px rgba(244, 114, 182, 0.3), 0 0 5px rgba(103, 232, 249, 0.3);
         }
 
-        /* Exam Timetable - Visual Hierarchy */
-        .exam-card {
-            background: rgba(51, 65, 85, 0.6); /* Card background */
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .exam-card strong {
-            color: #f1f5f9; /* Primary text for bolded dates */
-        }
-        .exam-card span.text-accent {
-            color: #94a3b8; /* Accent text for time, as per prompt */
-        }
-        .exam-card.border-blue-500 { border-left-color: #3b82f6; } /* Primary Blue for theory */
-        .exam-card.border-orange-500 { border-left-color: #fb923c; } /* Secondary Orange for practical */
+        /* Exam Timetable */
+        .exam-card.border-blue-500 { border-left-color: #3b82f6; }
+        .exam-card.border-orange-500 { border-left-color: #fb923c; }
         
-        /* Charts - Adjusted for Dark Mode */
+        /* Charts */
         .chart-container {
             position: relative;
             margin: auto;
@@ -220,57 +202,29 @@
             width: 100%;
             max-width: 350px;
         }
-        @media (min-width: 768px) {
-            .chart-container {
-                height: 320px;
-            }
-        }
-        /* Chart specific styling */
-        .chartjs-render-monitor canvas {
-            background-color: rgba(51, 65, 85, 0.3) !important; /* Match card background opacity */
-            border-radius: 12px;
-        }
-        .chartjs-render-monitor .chartjs-grid-line {
-            stroke: rgba(255, 255, 255, 0.1) !important; /* Lighter grid lines */
-        }
-        .chartjs-render-monitor .chartjs-tooltip {
-            background-color: rgba(30, 41, 59, 0.9) !important;
-            color: #f1f5f9 !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
-            backdrop-filter: blur(5px) !important;
-        }
-        .chartjs-render-monitor .chartjs-tooltip-title,
-        .chartjs-render-monitor .chartjs-tooltip-label {
-            color: #f1f5f9 !important;
-        }
-        .chartjs-legend-labels li span {
-            background-color: inherit !important; /* Fix for legend colors */
-            border-radius: 4px;
-        }
-        .chartjs-legend-labels li {
-            color: #cbd5e1 !important; /* Secondary text color for legend labels */
-        }
+        @media (min-width: 768px) { .chart-container { height: 320px; } }
         
-        /* Sticky header for daily tasks */
-        #plan-details .sticky {
-            background: rgba(30, 41, 59, 0.8); /* Match main container background */
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Subtle separator */
+        /* Sticky Header */
+        .sticky-header {
+            position: sticky;
+            top: -1px; /* Ensure it sticks right at the top */
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             z-index: 10;
         }
 
         /* Back to Top Button */
         #backToTopBtn {
-            position: fixed;
+            position: absolute; /* Relative to #app container */
             bottom: 1.5rem;
             right: 1.5rem;
-            display: none;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: opacity 0.3s, transform 0.3s;
             opacity: 0;
-            transform: translateY(10px);
+            transform: translateY(20px);
             z-index: 50;
-            background: linear-gradient(to right, #ef4444, #dc2626); /* Red gradient */
+            background: linear-gradient(to right, #ef4444, #dc2626);
             color: white;
             border-radius: 50%;
             width: 50px;
@@ -278,48 +232,39 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4), 0 0 15px rgba(239, 68, 68, 0.5); /* Red glow */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4), 0 0 15px rgba(239, 68, 68, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            pointer-events: none;
         }
         #backToTopBtn.show {
-            display: flex;
             opacity: 1;
             transform: translateY(0);
+            pointer-events: auto;
         }
         #backToTopBtn:hover {
-            transform: translateY(-5px) scale(1.1); /* More pronounced hover */
+            transform: translateY(-5px) scale(1.1);
             box-shadow: 0 6px 12px rgba(0,0,0,0.5), 0 0 20px rgba(239, 68, 68, 0.7);
         }
-        #backToTopBtn svg {
-            width: 20px; /* Adjusted icon size to w-5 h-5 */
-            height: 20px;
-        }
-
-        /* Responsive Padding */
-        .p-4 { padding: 1rem; }
-        @media (min-width: 640px) { .sm\:p-6 { padding: 1.5rem; } }
-        @media (min-width: 768px) { .md\:p-8 { padding: 2rem; } }
+        #backToTopBtn svg { width: 20px; height: 20px; }
 
         /* Loading Animation */
         .stagger-load-item {
-            opacity: 0; /* Starts hidden */
-            transform: translateY(20px); /* Starts below */
-            transition: opacity 0.5s ease-out, transform 0.5s ease-out; /* Smooth transition */
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
         }
         .stagger-load-item.loaded {
-            opacity: 1; /* Fades in */
-            transform: translateY(0); /* Slides up */
+            opacity: 1;
+            transform: translateY(0);
         }
-
     </style>
 </head>
 <body>
 
     <div id="app" class="p-4 sm:p-6 md:p-8">
         <header class="text-center mb-4 flex-shrink-0">
-            <h1 class="text-3xl sm:text-4xl font-black tracking-tight gradient-text">The 30-Day Path from Rock Bottom to Competent
-</h1>
-            <p class="mt-2 text-base text-secondary">Interactive Dashboard. Study Well . God Bless You All</p>
+            <h1 class="text-3xl sm:text-4xl font-black tracking-tight gradient-text">The 30-Day Judgment</h1>
+            <p class="mt-2 text-base text-secondary">Interactive Dashboard</p>
         </header>
 
         <div class="mb-6 p-1 rounded-2xl flex-shrink-0 flex justify-center glass-card">
@@ -348,18 +293,20 @@
                         </div>
                     </div>
                     <div class="flex flex-col lg:flex-row gap-8">
-                        <aside class="w-full lg:w-1/3 xl:w-1/4 lg:sticky top-4 self-start glass-card">
-                            <h2 class="text-xl font-bold mb-4 gradient-text">Mission Schedule</h2>
-                            <div id="day-selector" class="space-y-4 p-4 rounded-xl shadow-sm glass-card"></div>
+                        <aside class="w-full lg:w-1/3 xl:w-1/4 lg:sticky top-0 self-start">
+                            <div class="glass-card p-4">
+                               <h2 class="text-xl font-bold mb-4 gradient-text">Mission Schedule</h2>
+                               <div id="day-selector" class="space-y-4"></div>
+                            </div>
                         </aside>
                         <section id="plan-details" class="w-full lg:w-2/3 xl:w-3/4"></section>
                     </div>
                 </div>
                 <div id="view-progress" class="hidden">
-                        <div class="text-center mb-8">
-                            <h2 class="text-2xl font-bold gradient-text">Your Progress Report</h2>
-                            <p class="mt-1 text-secondary">This is a real-time reflection of your work. Make the numbers go up.</p>
-                        </div>
+                    <div class="text-center mb-8">
+                        <h2 class="text-2xl font-bold gradient-text">Your Progress Report</h2>
+                        <p class="mt-1 text-secondary">This is a real-time reflection of your work. Make the numbers go up.</p>
+                    </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                         <div class="p-6 rounded-xl shadow-sm glass-card">
                             <h3 class="font-bold text-lg text-center mb-4 text-primary">Overall Completion</h3>
@@ -369,9 +316,9 @@
                         </div>
                         <div class="p-6 rounded-xl shadow-sm glass-card">
                             <h3 class="font-bold text-lg text-center mb-4 text-primary">Weekly Task Completion</h3>
-                                <div class="chart-container" style="max-width: 600px;">
-                                    <canvas id="weeklyProgressChart"></canvas>
-                                </div>
+                            <div class="chart-container" style="max-width: 600px;">
+                                <canvas id="weeklyProgressChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -381,11 +328,11 @@
                         <div class="mb-6 p-4 rounded-xl glass-card">
                             <h3 class="font-semibold text-primary mb-3">Quick Navigation</h3>
                             <div class="flex flex-wrap gap-2">
-                                <button onclick="scrollToExam('date-18', 'theory')" class="quick-nav-btn py-1 px-3 rounded-full text-xs font-semibold">Aug 18 (Theory)</button>
-                                <button onclick="scrollToExam('date-20', 'theory')" class="quick-nav-btn py-1 px-3 rounded-full text-xs font-semibold">Aug 20 (Theory)</button>
-                                <button onclick="scrollToExam('date-22', 'theory')" class="quick-nav-btn py-1 px-3 rounded-full text-xs font-semibold">Aug 22 (Theory)</button>
-                                <button onclick="scrollToExam('date-23', 'theory')" class="quick-nav-btn py-1 px-3 rounded-full text-xs font-semibold">Aug 23 (Theory)</button>
-                                <button onclick="scrollToExam('date-25', 'practical')" class="quick-nav-btn orange py-1 px-3 rounded-full text-xs font-semibold">Practicals</button>
+                                <button onclick="scrollToExam('date-18')" class="quick-nav-btn py-1 px-3 text-xs">Aug 18 (Theory)</button>
+                                <button onclick="scrollToExam('date-20')" class="quick-nav-btn py-1 px-3 text-xs">Aug 20 (Theory)</button>
+                                <button onclick="scrollToExam('date-22')" class="quick-nav-btn py-1 px-3 text-xs">Aug 22 (Theory)</button>
+                                <button onclick="scrollToExam('date-23')" class="quick-nav-btn py-1 px-3 text-xs">Aug 23 (Theory)</button>
+                                <button onclick="scrollToExam('date-25')" class="quick-nav-btn orange py-1 px-3 text-xs">Practicals</button>
                             </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -732,7 +679,6 @@ function renderDaySelector() {
             weekHeader.querySelector('svg').classList.toggle('rotate-180');
         });
 
-        // Open the current week by default
         if (weekData.days.includes(appState.currentDay)) {
             dayGrid.classList.add('open');
             weekHeader.querySelector('svg').classList.add('rotate-180');
@@ -744,10 +690,9 @@ function renderAllPlans() {
     const detailsContainer = document.getElementById('plan-details');
     detailsContainer.innerHTML = '';
 
-    planData.forEach((dayData, dayIndex) => {
+    planData.forEach((dayData) => {
         const daySection = document.createElement('div');
         daySection.id = `day-plan-${dayData.day}`;
-        daySection.className = 'day-plan-section pt-8 -mt-8';
         
         let tasksHtml = '';
         dayData.tasks.forEach((task, index) => {
@@ -767,9 +712,9 @@ function renderAllPlans() {
         });
 
         daySection.innerHTML = `
-            <div class="p-1 mb-10">
-                <h2 class="text-2xl font-black text-primary sticky top-0 py-2 z-10" style="background-color: rgba(30, 41, 59, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">Day ${dayData.day}: Daily Tasks</h2>
-                <div class="mt-6 space-y-4">${tasksHtml}</div>
+            <div class="day-plan-section pt-4 mb-6">
+                <h2 class="sticky-header text-2xl font-black text-primary py-3 px-4 -mx-4">Day ${dayData.day}: Daily Tasks</h2>
+                <div class="mt-6">${tasksHtml.replace(/class="task-card/g, 'class="task-card glass-card')}</div>
             </div>
         `;
         detailsContainer.appendChild(daySection);
@@ -793,7 +738,7 @@ function setupScrollSpy() {
 
     const options = {
         root: document.getElementById('main-content-wrapper'),
-        rootMargin: '0px 0px -50% 0px', /* Adjusted for better scroll-spy accuracy */
+        rootMargin: '0px 0px -90% 0px',
         threshold: 0
     };
 
@@ -806,7 +751,7 @@ function setupScrollSpy() {
         });
     }, options);
 
-    document.querySelectorAll('.day-plan-section').forEach(section => {
+    document.querySelectorAll('#plan-details .day-plan-section').forEach(section => {
         intersectionObserver.observe(section);
     });
 }
@@ -854,8 +799,8 @@ function renderCharts() {
             labels: ['Completed', 'Pending'],
             datasets: [{
                 data: [progress.completed, progress.total - progress.completed],
-                backgroundColor: ['#4CAF50', 'rgba(148, 163, 184, 0.5)'], /* Material Green, Slate-400 with opacity */
-                borderColor: ['rgba(51, 65, 85, 0.6)'], /* Card background color */
+                backgroundColor: ['#4CAF50', 'rgba(148, 163, 184, 0.5)'],
+                borderColor: ['rgba(51, 65, 85, 0.6)'],
                 borderWidth: 4,
             }]
         },
@@ -876,13 +821,13 @@ function renderCharts() {
                 {
                     label: 'Completed',
                     data: Object.values(progress.weeklyCompleted),
-                    backgroundColor: '#4CAF50', /* Material Green */
+                    backgroundColor: '#4CAF50',
                     borderRadius: 4,
                 },
                 {
                     label: 'Pending',
                     data: Object.values(progress.weeklyPending),
-                    backgroundColor: 'rgba(148, 163, 184, 0.5)', /* Slate-400 with opacity */
+                    backgroundColor: 'rgba(148, 163, 184, 0.5)',
                     borderRadius: 4,
                 }
             ]
@@ -894,19 +839,19 @@ function renderCharts() {
                 y: { 
                     stacked: true, 
                     beginAtZero: true, 
-                    grid: { color: 'rgba(255, 255, 255, 0.1)' }, /* Lighter grid lines */
-                    ticks: { precision: 0, color: '#cbd5e1' } /* Secondary text color */
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { precision: 0, color: '#cbd5e1' }
                 },
                 x: { 
                     stacked: true, 
                     grid: { display: false },
-                    ticks: { color: '#cbd5e1' } /* Secondary text color */
+                    ticks: { color: '#cbd5e1' }
                 }
             },
             plugins: { 
                 legend: { 
                     position: 'bottom', 
-                    labels: { color: '#cbd5e1' } /* Secondary text color for legend labels */
+                    labels: { color: '#cbd5e1' }
                 }, 
                 tooltip: { enabled: true, mode: 'index' } 
             }
@@ -915,9 +860,8 @@ function renderCharts() {
 }
 
 function startCountdown() {
-    const countdownDate = new Date("2025-08-18T10:00:00+05:30").getTime(); // Exam date and time (IST)
-    const startDate = new Date("2025-07-01T00:00:00+05:30").getTime(); // Starting point for progress bar
-
+    const countdownDate = new Date("2025-08-18T10:00:00+05:30").getTime();
+    const startDate = new Date("2025-07-19T00:00:00+05:30").getTime();
     const totalDuration = countdownDate - startDate;
 
     const countdownCtx = document.getElementById('countdownChart').getContext('2d');
@@ -927,7 +871,7 @@ function startCountdown() {
         data: {
             datasets: [{
                 data: [0, 100],
-                backgroundColor: ['#3b82f6', 'rgba(148, 163, 184, 0.4)'], /* Primary Blue, Slate-400 with opacity */
+                backgroundColor: ['#22d3ee', 'rgba(148, 163, 184, 0.4)'], // Light Blue
                 borderColor: ['rgba(51, 65, 85, 0.6)'],
                 borderWidth: 4,
             }]
@@ -943,9 +887,9 @@ function startCountdown() {
 
     if (countdownInterval) clearInterval(countdownInterval);
 
-    countdownInterval = setInterval(() => {
-        const currentRealTime = new Date().getTime(); // Use current real time for live update
-        const distance = countdownDate - currentRealTime;
+    const update = () => {
+        const now = new Date().getTime();
+        const distance = countdownDate - now;
 
         if (distance < 0) {
             clearInterval(countdownInterval);
@@ -965,83 +909,62 @@ function startCountdown() {
         document.getElementById("minutes").innerText = String(minutes).padStart(2, '0');
         document.getElementById("seconds").innerText = String(seconds).padStart(2, '0');
         
-        const elapsed = currentRealTime - startDate;
-        const elapsedPercent = (elapsed / totalDuration) * 100;
+        const elapsed = now - startDate;
+        const elapsedPercent = Math.min(100, (elapsed / totalDuration) * 100);
         countdownChart.data.datasets[0].data = [elapsedPercent, 100 - elapsedPercent];
         countdownChart.update('none');
-
-    }, 1000);
+    };
+    
+    update();
+    countdownInterval = setInterval(update, 1000);
 }
 
-function filterContent(type) {
-    const theory = document.querySelector('#view-timetable .theory');
-    const practical = document.querySelector('#view-timetable .practical');
-
-    if (theory && practical) {
-        if (type === 'theory') {
-            theory.style.display = 'block';
-            practical.style.display = 'block';
-        } else if (type === 'practical') {
-            theory.style.display = 'none';
-            practical.style.display = 'block';
-        }
-    }
-}
-
-function scrollToExam(id, type) {
+function scrollToExam(id) {
     switchView('view-timetable');
     setTimeout(() => {
-        filterContent(type);
-        setTimeout(() => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'center' }); /* Smooth scroll to center */
-            }
-        }, 100);
-    }, 50);
+        const element = document.getElementById(id);
+        if (element) {
+            const mainContentWrapper = document.getElementById('main-content-wrapper');
+            mainContentWrapper.scrollTo({
+                top: element.offsetTop - 80,
+                behavior: 'smooth'
+            });
+        }
+    }, 100);
 }
 
 function switchView(viewId) {
     document.querySelectorAll('#main-content > div').forEach(view => view.classList.add('hidden'));
     document.querySelectorAll('#top-tab-nav .tab').forEach(item => item.classList.remove('active'));
     
-    document.getElementById(viewId).classList.remove('hidden');
+    const newView = document.getElementById(viewId);
+    if(newView) newView.classList.remove('hidden');
     
     const activeTab = document.querySelector(`#top-tab-nav .tab[data-view="${viewId}"]`);
     if(activeTab) activeTab.classList.add('active');
 
     if (viewId === 'view-progress') {
         renderCharts();
-    } else if (viewId === 'view-timetable') {
-        // Ensure all timetable content is visible when switching to this view
-        const theoryDiv = document.querySelector('#view-timetable .theory');
-        const practicalDiv = document.querySelector('#view-timetable .practical');
-        if (theoryDiv) theoryDiv.style.display = 'block';
-        if (practicalDiv) practicalDiv.style.display = 'block';
     }
 
-    // Apply staggered load animation for the newly active view's content
     const currentViewContent = document.getElementById(viewId);
     if (currentViewContent) {
         const staggerItems = currentViewContent.querySelectorAll('.stagger-load-item');
         staggerItems.forEach((item, index) => {
-            // Reset 'loaded' class to ensure animation plays again if view is re-activated
             item.classList.remove('loaded'); 
-            // Force browser to re-calculate style to ensure animation restarts from the initial state (opacity:0, translateY:20px)
             void item.offsetWidth; 
             setTimeout(() => {
                 item.classList.add('loaded');
-            }, index * 100); // Stagger by 100ms per item
+            }, index * 50);
         });
     }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Corrected initialization order
     loadState();
     renderDaySelector();
-    renderAllPlans(); // Render content first
-    switchView('view-mission-schedule'); // Then switch view to apply animations
+    renderAllPlans();
+    switchView('view-mission-schedule');
     setActiveDay(appState.currentDay);
     setupScrollSpy();
     startCountdown();
@@ -1056,7 +979,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const day = parseInt(button.dataset.day, 10);
             const targetElement = document.getElementById(`day-plan-${day}`);
             if (targetElement) {
-                targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' }); /* Smooth scroll to center */
+                mainContentWrapper.scrollTo({
+                    top: targetElement.offsetTop,
+                    behavior: 'smooth'
+                });
             }
         }
     });
